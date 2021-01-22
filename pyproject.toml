@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "trading-news-telegram-bot"
+version = "0.1.0"
+description = "TO THE MOON!"
+authors = ["Christopher Goh <chrisgzf@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.25.1"
+tweepy = "^3.10.0"
+python-telegram-bot = "^13.1"
+yfinance = "^0.1.55"
+
+[tool.poetry.dev-dependencies]
+yapf = "^0.30.0"
+pylint = "^2.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
