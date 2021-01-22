@@ -5,7 +5,7 @@ import requests
 import os
 import yfinance as yf
 
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
 try:
@@ -15,26 +15,26 @@ except ImportError:
 
 poll_delay = 30
 
-twitter_consumer_key = os.environ["TWITTER_CONSUMER_KEY"] or config.twitter_consumer_key
-twitter_consumer_secret = os.environ["TWITTER_CONSUMER_SECRET"] or config.twitter_consumer_secret
-twitter_access_token = os.environ["TWITTER_ACCESS_TOKEN"] or config.twitter_access_token
-twitter_access_token_secret = os.environ["TWITTER_ACCESS_TOKEN_SECRET"] or config.twitter_access_token_secret
-twitter_subscribed_list_id = os.environ["TWITTER_SUBSCRIBED_LIST_ID"] or config.twitter_subscribed_list_id
+twitter_consumer_key = os.environ.get("TWITTER_CONSUMER_KEY") or config.twitter_consumer_key
+twitter_consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET") or config.twitter_consumer_secret
+twitter_access_token = os.environ.get("TWITTER_ACCESS_TOKEN") or config.twitter_access_token
+twitter_access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET") or config.twitter_access_token_secret
+twitter_subscribed_list_id = os.environ.get("TWITTER_SUBSCRIBED_LIST_ID") or config.twitter_subscribed_list_id
 
-telegram_token = os.environ["TELEGRAM_TOKEN"] or config.telegram_token
-telegram_group_id = os.environ["TELEGRAM_GROUP_ID"] or config.telegram_group_id
+telegram_token = os.environ.get("TELEGRAM_TOKEN") or config.telegram_token
+telegram_group_id = os.environ.get("TELEGRAM_GROUP_ID") or config.telegram_group_id
 
 
 def search(update: Update, context: CallbackContext) -> None:
     ticker = context.args[0]
     t = yf.Ticker(ticker.upper())
     info = t.info
-    reply = f"""{info["longName"]}
-https://finance.yahoo.com/quote/{ticker}
-Day Low/High: {info["dayLow"]} {info["dayHigh"]}
-Bid/Ask: {info["bid"]} {info["ask"]}"""
+    reply = f"""**[{info["longName"]}](https://finance.yahoo.com/quote/{ticker})**
+**Day Low/High:** {info["dayLow"]} {info["dayHigh"]}
+**Bid/Ask:** {info["bid"]} {info["ask"]}"""
 
-    update.message.reply_text(reply)
+    update.message.reply_text(
+        reply, disable_web_page_preview=True, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 def send_tweet_to_telegram(tweet):
