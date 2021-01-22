@@ -2,23 +2,28 @@ import tweepy
 import re
 import time
 import requests
-import config
+import os
 import yfinance as yf
 
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
+try:
+    import config
+except ImportError:
+    print("No config file found.")
 
-poll_delay = 15
+poll_delay = 30
 
-twitter_consumer_key = config.twitter_consumer_key
-twitter_consumer_secret = config.twitter_consumer_secret
-twitter_access_token = config.twitter_access_token
-twitter_access_token_secret = config.twitter_access_token_secret
-twitter_subscribed_list_id = config.twitter_subscribed_list_id
+twitter_consumer_key = os.environ["TWITTER_CONSUMER_KEY"] or config.twitter_consumer_key
+twitter_consumer_secret = os.environ["TWITTER_CONSUMER_SECRET"] or config.twitter_consumer_secret
+twitter_access_token = os.environ["TWITTER_ACCESS_TOKEN"] or config.twitter_access_token
+twitter_access_token_secret = os.environ["TWITTER_ACCESS_TOKEN_SECRET"] or config.twitter_access_token_secret
+twitter_subscribed_list_id = os.environ["TWITTER_SUBSCRIBED_LIST_ID"] or config.twitter_subscribed_list_id
 
-telegram_token = config.telegram_token
-telegram_group_id = config.telegram_group_id
+telegram_token = os.environ["TELEGRAM_TOKEN"] or config.telegram_token
+telegram_group_id = os.environ["TELEGRAM_GROUP_ID"] or config.telegram_group_id
+
 
 def search(update: Update, context: CallbackContext) -> None:
     ticker = context.args[0]
@@ -30,6 +35,7 @@ Day Low/High: {info["dayLow"]} {info["dayHigh"]}
 Bid/Ask: {info["bid"]} {info["ask"]}"""
 
     update.message.reply_text(reply)
+
 
 def send_tweet_to_telegram(tweet):
     def escape_chars(x):
@@ -77,6 +83,7 @@ def poll_list():
         for tweet in reversed(fin_list):
             send_tweet_to_telegram(tweet)
         last_tweet_id = fin_list[0].id
+
 
 updater = Updater(telegram_token)
 updater.dispatcher.add_handler(CommandHandler('s', search))
