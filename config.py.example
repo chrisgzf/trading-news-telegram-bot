@@ -1,0 +1,8 @@
+twitter_consumer_key = ""
+twitter_consumer_secret = ""
+twitter_access_token = ""
+twitter_access_token_secret = ""
+twitter_subscribed_list_id = 12345
+
+telegram_group_id = -12345
+telegram_token = ""
