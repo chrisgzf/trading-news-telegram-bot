@@ -35,7 +35,40 @@ telegram_group_id = os.environ.get(
 matplotlib.use('agg')
 
 
-def search(update: Update, context: CallbackContext) -> None:
+def send_graph_using_ticker(update: Update,
+                            context: CallbackContext,
+                            t,
+                            graph_period: str,
+                            ticker: str,
+                            interval: str = "1m",
+                            prepost: bool = False):
+    history = t.history(period=graph_period,
+                        interval=interval,
+                        prepost=prepost)
+    last_data = history.tail(1)
+    last_data_time = last_data.index.strftime("%H:%M:%S")[0]
+    last_data_price = round(last_data["Open"][0], 2)
+    title = f"{ticker.upper()} ({last_data_price} at {last_data_time})"
+    chart = history["Open"].plot(title=title,
+                                 ylabel="Open Price ($)",
+                                 xlabel="Date/Time")
+    fig = chart.get_figure()
+    fig.savefig("chart.png")
+    fig.clf()
+
+    context.bot.send_photo(chat_id=update.effective_chat.id,
+                           photo=open("chart.png", "rb"))
+
+
+def s(update: Update, context: CallbackContext):
+    search(update, context, True)
+
+
+def ss(update: Update, context: CallbackContext):
+    search(update, context, False)
+
+
+def search(update: Update, context: CallbackContext, send_graph: bool) -> None:
     ticker = context.args[0]
     t = yf.Ticker(ticker.upper())
     info = t.info
@@ -43,27 +76,25 @@ def search(update: Update, context: CallbackContext) -> None:
 Day Low/High: {escape_markdown(str(info["dayLow"]), version=2)} {escape_markdown(str(info["dayHigh"]), version=2)}
 Bid/Ask: {escape_markdown(str(info["bid"]), version=2)} {escape_markdown(str(info["ask"]), version=2)}"""
 
-    print(reply)
-
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text=reply,
                              disable_web_page_preview=True,
                              parse_mode=ParseMode.MARKDOWN_V2)
 
-    history = t.history(period="1d", interval="1m")
-    last_data = history.tail(1)
-    last_data_time = last_data.index.strftime("%H:%M:%S")[0]
-    last_data_price = round(last_data["Open"][0], 2)
-    title = f"{ticker.upper()} ({last_data_price} at {last_data_time})"
-    chart = history["Open"].plot(title=title,
-                                 ylabel="Price ($)",
-                                 xlabel="Time")
-    fig = chart.get_figure()
-    fig.savefig("chart.png")
-    fig.clf()
+    if send_graph:
+        send_graph_using_ticker(update, context, t, "1d", ticker)
 
-    context.bot.send_photo(chat_id=update.effective_chat.id,
-                           photo=open("chart.png", "rb"))
+
+def chart(graph_period: str, interval: str, prepost: bool):
+    return lambda u, c: send_chart(u, c, graph_period, interval, prepost)
+
+
+def send_chart(update: Update, context: CallbackContext, graph_period: str,
+               interval: str, prepost: bool) -> None:
+    ticker = context.args[0]
+    t = yf.Ticker(ticker.upper())
+    send_graph_using_ticker(update, context, t, graph_period, ticker, interval,
+                            prepost)
 
 
 def send_tweet_to_telegram(tweet):
@@ -112,7 +143,11 @@ def poll_list():
 
 
 updater = Updater(telegram_token)
-updater.dispatcher.add_handler(CommandHandler('s', search))
+updater.dispatcher.add_handler(CommandHandler('s', s))
+updater.dispatcher.add_handler(CommandHandler('ss', ss))
+updater.dispatcher.add_handler(CommandHandler('1d', chart("1d", "1m", False)))
+updater.dispatcher.add_handler(CommandHandler('3d', chart("3d", "2m", True)))
+updater.dispatcher.add_handler(CommandHandler('5d', chart("5d", "5m", True)))
 updater.start_polling()
 
 print("Setup complete. Polling.")
