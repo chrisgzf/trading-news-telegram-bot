@@ -3,6 +3,11 @@ import re
 import time
 import requests
 import config
+import yfinance as yf
+
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+
 
 poll_delay = 15
 
@@ -15,6 +20,16 @@ twitter_subscribed_list_id = config.twitter_subscribed_list_id
 telegram_token = config.telegram_token
 telegram_group_id = config.telegram_group_id
 
+def search(update: Update, context: CallbackContext) -> None:
+    ticker = context.args[0]
+    t = yf.Ticker(ticker.upper())
+    info = t.info
+    reply = f"""{info["longName"]}
+https://finance.yahoo.com/quote/{ticker}
+Day Low/High: {info["dayLow"]} {info["dayHigh"]}
+Bid/Ask: {info["bid"]} {info["ask"]}"""
+
+    update.message.reply_text(reply)
 
 def send_tweet_to_telegram(tweet):
     def escape_chars(x):
@@ -63,6 +78,9 @@ def poll_list():
             send_tweet_to_telegram(tweet)
         last_tweet_id = fin_list[0].id
 
+updater = Updater(telegram_token)
+updater.dispatcher.add_handler(CommandHandler('s', search))
+updater.start_polling()
 
 while True:
     poll_list()
