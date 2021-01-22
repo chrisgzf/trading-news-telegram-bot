@@ -397,8 +397,8 @@ requests = ">=2.20"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.8"
-content-hash = "94627d57e16fc8d98029420d872f74dbd1a6c2597b8ec3a35da6e55222137019"
+python-versions = "3.8.3"
+content-hash = "f8b70da609966fef2a43b3f98987fe93fa1cf149fbbc2dc6eee7c41ad9686cee"
 
 [metadata.files]
 apscheduler = [
