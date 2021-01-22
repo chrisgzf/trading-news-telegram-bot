@@ -4,6 +4,7 @@ import time
 import requests
 import os
 import yfinance as yf
+import matplotlib
 
 from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackContext
@@ -31,6 +32,8 @@ telegram_token = os.environ.get("TELEGRAM_TOKEN") or config.telegram_token
 telegram_group_id = os.environ.get(
     "TELEGRAM_GROUP_ID") or config.telegram_group_id
 
+matplotlib.use('agg')
+
 
 def search(update: Update, context: CallbackContext) -> None:
     ticker = context.args[0]
@@ -46,6 +49,21 @@ Bid/Ask: {escape_markdown(str(info["bid"]), version=2)} {escape_markdown(str(inf
                              text=reply,
                              disable_web_page_preview=True,
                              parse_mode=ParseMode.MARKDOWN_V2)
+
+    history = t.history(period="1d", interval="1m")
+    last_data = history.tail(1)
+    last_data_time = last_data.index.strftime("%H:%M:%S")[0]
+    last_data_price = round(last_data["Open"][0], 2)
+    title = f"{ticker.upper()} ({last_data_price} at {last_data_time})"
+    chart = history["Open"].plot(title=title,
+                                 ylabel="Price ($)",
+                                 xlabel="Time")
+    fig = chart.get_figure()
+    fig.savefig("chart.png")
+    fig.clf()
+
+    context.bot.send_photo(chat_id=update.effective_chat.id,
+                           photo=open("chart.png", "rb"))
 
 
 def send_tweet_to_telegram(tweet):
