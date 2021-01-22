@@ -1,1 +1,1 @@
-worker: python tradingbot.py
+web: python tradingbot.py
