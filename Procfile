@@ -1,1 +1,1 @@
-web: python tradingbot.py
+web: python trading-news-telegram-bot/bot.py
