@@ -1,5 +1,4 @@
 import tweepy
-import re
 import time
 import requests
 import os
@@ -49,7 +48,13 @@ def send_graph_using_ticker(update: Update,
                         interval=interval,
                         prepost=prepost)
     last_data = history.tail(1)
-    last_data_time = last_data.index.strftime("%H:%M:%S")[0]
+    try:
+        last_data_time = last_data.index.strftime("%H:%M:%S")[0]
+    except AttributeError:
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Stock info not found. Did you type the right symbol?")
+        return
+
     last_data_price = round(last_data["Open"][0], 2)
     title = f"{ticker.upper()} ({last_data_price} at {last_data_time})"
 
@@ -89,8 +94,16 @@ def ss(update: Update, context: CallbackContext):
 def search(update: Update, context: CallbackContext, send_graph: bool) -> None:
     ticker = context.args[0]
     t = yf.Ticker(ticker.upper())
-    info = t.info
-    reply = f"""[*{escape_markdown(info["longName"], version=2)} \({escape_markdown(ticker.upper(), version=2)}\)*]({escape_markdown(f"https://finance.yahoo.com/quote/{ticker}", version=2, entity_type="TEXT_LINKS")})
+
+    try:
+        info = t.info
+    except KeyError:
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Stock info not found. Did you type the right symbol?")
+        return
+
+    stock_name = info.get("longName") or info.get("shortName") or info.get("longName")
+    reply = f"""[*{escape_markdown(stock_name, version=2)} \({escape_markdown(ticker.upper(), version=2)}\)*]({escape_markdown(f"https://finance.yahoo.com/quote/{ticker}", version=2, entity_type="TEXT_LINKS")})
 Day Low/High: {escape_markdown(str(info["dayLow"]), version=2)} {escape_markdown(str(info["dayHigh"]), version=2)}
 Bid/Ask: {escape_markdown(str(info["bid"]), version=2)} {escape_markdown(str(info["ask"]), version=2)}"""
 
