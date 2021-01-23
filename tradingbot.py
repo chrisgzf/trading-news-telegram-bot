@@ -5,6 +5,7 @@ import requests
 import os
 import yfinance as yf
 import matplotlib
+import io
 
 from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackContext
@@ -53,11 +54,13 @@ def send_graph_using_ticker(update: Update,
                                  ylabel="Open Price ($)",
                                  xlabel="Date/Time")
     fig = chart.get_figure()
-    fig.savefig("chart.png")
+    img = io.BytesIO()
+    fig.savefig(img, format="png")
+    img.seek(0)
     fig.clf()
 
     context.bot.send_photo(chat_id=update.effective_chat.id,
-                           photo=open("chart.png", "rb"))
+                           photo=img)
 
 
 def s(update: Update, context: CallbackContext):
