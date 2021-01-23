@@ -65,4 +65,4 @@ Just submit a PR! 😇
 
 ## License
 
-This project is open-source, and is licensed with the MIT license. See [our license](blob/master/LICENSE) for details.
+This project is open-source, and is licensed with the MIT license. See [our license](LICENSE) for details.
