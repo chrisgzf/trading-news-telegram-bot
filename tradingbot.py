@@ -3,8 +3,11 @@ import re
 import time
 import requests
 import os
+import numpy as np
 import yfinance as yf
 import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import io
 
 from telegram import Update, ParseMode
@@ -35,7 +38,6 @@ telegram_group_id = os.environ.get(
 
 matplotlib.use('agg')
 
-
 def send_graph_using_ticker(update: Update,
                             context: CallbackContext,
                             t,
@@ -50,10 +52,23 @@ def send_graph_using_ticker(update: Update,
     last_data_time = last_data.index.strftime("%H:%M:%S")[0]
     last_data_price = round(last_data["Open"][0], 2)
     title = f"{ticker.upper()} ({last_data_price} at {last_data_time})"
-    chart = history["Open"].plot(title=title,
-                                 ylabel="Open Price ($)",
-                                 xlabel="Date/Time")
-    fig = chart.get_figure()
+
+    dt = history["Open"].index
+    N = len(dt)
+    ind = np.arange(N)
+
+    def format_date(x, pos=None):
+        thisind = np.clip(int(x+0.5), 0, N-1)
+        return dt[thisind].strftime('%Y-%m-%d')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.plot(ind, history["Open"].values, "-")
+    ax.xaxis.set_major_formatter(FuncFormatter(format_date))
+    ax.set_title(title)
+    ax.set_ylabel("Price ($)")
+    ax.set_xlabel("Date/Time")
+    fig.autofmt_xdate()
     img = io.BytesIO()
     fig.savefig(img, format="png")
     img.seek(0)
