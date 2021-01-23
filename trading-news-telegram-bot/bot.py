@@ -1,17 +1,22 @@
-import tweepy
-import time
-import requests
+import io
 import os
-import numpy as np
-import yfinance as yf
+import time
+
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-import io
+import numpy as np
+import requests
+import tweepy
+import yfinance as yf
 
-from telegram import Update, ParseMode
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from matplotlib.ticker import FuncFormatter
+from telegram import ParseMode
+from telegram import Update
+from telegram.ext import CallbackContext
+from telegram.ext import CommandHandler
+from telegram.ext import Updater
 from telegram.utils.helpers import escape_markdown
+
 
 try:
     import config
