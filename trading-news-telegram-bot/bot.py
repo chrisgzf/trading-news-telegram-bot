@@ -104,11 +104,16 @@ def ss(update: Update, context: CallbackContext):
 
 def search(update: Update, context: CallbackContext, send_graph: bool) -> None:
     ticker = context.args[0]
+    # this is a meme
+    if ticker.upper() == "ETH-SGD":
+        ticker = "ETH-CNY"
+    # end meme
+
     t = yf.Ticker(ticker.upper())
 
     try:
         info = t.info
-    except KeyError:
+    except (KeyError, ValueError):
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Stock info not found. Did you type the right symbol?",
@@ -143,6 +148,10 @@ def send_chart(
     prepost: bool,
 ) -> None:
     ticker = context.args[0]
+    # this is a meme
+    if ticker.upper() == "ETH-SGD":
+        ticker = "ETH-CNY"
+    # end meme
     t = yf.Ticker(ticker.upper())
     send_graph_using_ticker(update, context, t, graph_period, ticker, interval, prepost)
 
