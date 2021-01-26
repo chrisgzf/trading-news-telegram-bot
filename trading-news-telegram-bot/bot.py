@@ -23,7 +23,7 @@ try:
 except ImportError:
     print("No config file found.")
 
-poll_delay = 30
+poll_delay = 45
 
 twitter_consumer_key = (
     os.environ.get("TWITTER_CONSUMER_KEY") or config.twitter_consumer_key
