@@ -16,6 +16,7 @@ from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler
 from telegram.ext import Updater
 from telegram.utils.helpers import escape_markdown
+from tweepy import TweepError
 
 
 try:
@@ -194,9 +195,19 @@ last_tweet_id = fin_list[0].id
 
 def poll_list():
     global last_tweet_id
-    fin_list = api.list_timeline(
-        list_id=twitter_subscribed_list_id, since_id=last_tweet_id
-    )
+    try:
+        fin_list = api.list_timeline(
+            list_id=twitter_subscribed_list_id, since_id=last_tweet_id
+        )
+    except TweepError as e:
+        # possible rate limit
+        print("Possible rate limit, stopping polling temporarily")
+        print(e)
+        time.sleep(15 * 60 + 3)
+        fin_list = api.list_timeline(
+            list_id=twitter_subscribed_list_id, since_id=last_tweet_id
+        )
+
     if fin_list:
         for tweet in reversed(fin_list):
             send_tweet_to_telegram(tweet)
