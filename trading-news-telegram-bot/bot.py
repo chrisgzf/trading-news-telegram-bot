@@ -157,6 +157,26 @@ def send_chart(
     send_graph_using_ticker(update, context, t, graph_period, ticker, interval, prepost)
 
 
+def quote(update: Update, context: CallbackContext):
+    endpoint = "https://animechan.vercel.app/api/random"
+    nice_quote = requests.get(endpoint).json()
+    character = escape_markdown(nice_quote.get("character"), version=2)
+    source = escape_markdown(nice_quote.get("anime"), version=2)
+    body = escape_markdown(nice_quote.get("quote"), version=2)
+    message = f"""
+*\[Inspirational Quote\]* {character} from {source}:
+
+{body}
+    """
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=message,
+        disable_web_page_preview=True,
+        parse_mode=ParseMode.MARKDOWN_V2,
+    )
+
+
 def send_tweet_to_telegram(tweet):
     telegram_endpoint = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
     username = escape_markdown(tweet.user.screen_name, version=2)
@@ -220,6 +240,7 @@ updater.dispatcher.add_handler(CommandHandler("ss", ss))
 updater.dispatcher.add_handler(CommandHandler("1d", chart("1d", "1m", False)))
 updater.dispatcher.add_handler(CommandHandler("3d", chart("3d", "2m", True)))
 updater.dispatcher.add_handler(CommandHandler("5d", chart("5d", "5m", True)))
+updater.dispatcher.add_handler(CommandHandler("quote", quote))
 updater.start_polling()
 
 print("Setup complete. Polling.")
